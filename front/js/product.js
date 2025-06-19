@@ -70,8 +70,8 @@ function pushDataToStorage () {
                     produit.quantite = parseInt(produit.quantite) + parseInt(productFromLocal.quantite)
                     storageStatus.slice(index, 1)
                 }
-                storagePush()
             })
+            storagePush()
 
         } else {
             storageStatus = []
