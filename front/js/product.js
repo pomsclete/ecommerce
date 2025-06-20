@@ -64,11 +64,11 @@ function pushDataToStorage () {
         }
 
         if (storageStatus) {
-            storageStatus.forEach((index, productFromLocal) => {
+            storageStatus.forEach((productFromLocal, index) => {
                 if (produit.id === productFromLocal.id
                     && produit.color === productFromLocal.color) {
                     produit.quantite = parseInt(produit.quantite) + parseInt(productFromLocal.quantite)
-                    storageStatus.slice(index, 1)
+                    storageStatus.splice(index, 1)
                 }
             })
             storagePush()
@@ -77,7 +77,6 @@ function pushDataToStorage () {
             storageStatus = []
             storagePush()
         }
-        //storagePush(produit)
 
 
     })
