@@ -82,4 +82,49 @@ function pushDataToStorage () {
     })
 
 }
-pushDataToStorage()
+//pushDataToStorage()
+function addDataToStorage () {
+    const btn = document.querySelector("#addToCart")
+    btn.addEventListener("click", () => {
+        const id = getId()
+        const color = document.querySelector("#colors").value
+        const nombre = document.querySelector("#quantity").value
+        let storageStatus = JSON.parse(localStorage.getItem("commande"))
+        // Le choix de l'utilisateur
+        let produitCommande = {
+            id: id,
+            couleur: color,
+            quantite: nombre
+        }
+        let save = () => {
+            if (nombre < 1 || nombre > 100) {
+                alert("Veuillez choisir une quantité compris entre 1 et 100")
+            } else if (color === "") {
+                alert("Choisir une couleur")
+            } else {
+                storageStatus.push(produitCommande)
+                //Enregitrement des donnees
+                localStorage.setItem("commande", JSON.stringify(storageStatus))
+                alert("Produit ajouté au panier avec succès")
+            }
+        }
+
+        if (storageStatus) {
+            // Quand nous avons des données dans la base
+            storageStatus.forEach((product, index) => {
+                if (product.id === produitCommande.id &&
+                    product.couleur === produitCommande.couleur) {
+                    produitCommande.quantite = parseInt(product.quantite) + parseInt(produitCommande.quantite)
+                    storageStatus.splice(index, 1)
+                }
+            })
+            save()
+        } else {
+            storageStatus = []
+            // Aucune donnée trouvée
+            save()
+        }
+
+    })
+}
+addDataToStorage()
