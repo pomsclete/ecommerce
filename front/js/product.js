@@ -1,130 +1,73 @@
-// Recuperation de l'ID
-function getId () {
-    let url = new URL(window.location.href)
-    let id = url.searchParams.get("id")
-    return id
-
+// Récupération de l'ID du produit depuis l'URL de la page.
+function productCheck () {
+    const url = new URL(window.location.href);
+    const id = url.searchParams.get("id");
+    return id;
 }
 
-
-// Recuperation des données du produit selon l'ID
-//API: http://127.0.0.1:3000/api/products/1234
-async function getDataById () {
+// Récupération des informations du produit grâce à son ID, depuis l'API.
+async function productInfos () {
+    const productId = productCheck();
     try {
-        let data = await fetch(`http://127.0.0.1:3000/api/products/${getId()}`)
-        let dataC = await data.json()
-        return dataC
+        const res = await fetch(`http://localhost:3000/api/products/${productId}`);
+        const item = await res.json();
+        return item;
     } catch (error) {
-        console.log(`Une erreur a été détecté : ${error}`);
-
-    }
-
+        console.log("Erreur: " + error);
+    };
 }
 
-// Ajout des informations sur le DOM
+// Modification du DOM pour faire apparaitre les détails du produit.
 (async function fillProduct () {
-    let produit = await getDataById()
+    const item = await productInfos();
     document.querySelector(".item__img").innerHTML =
-        `<img src="${produit.imageUrl}" alt="${produit.altTxt}">`;
-    document.querySelector("#title").innerHTML = produit.name
-    document.querySelector("#price").innerHTML = produit.price
-    document.querySelector("#description").innerHTML = produit.description
-
-    produit.colors.map(color => {
+        `<img src="${item.imageUrl}" alt="${item.altTxt}">`;
+    document.querySelector("#title").innerHTML = item.name;
+    document.querySelector("#price").innerHTML = item.price;
+    document.querySelector("#description").innerHTML = item.description;
+    item.colors.forEach(color => {
         document.querySelector("#colors").innerHTML +=
             `<option value="${color}">${color}</option>`
-    })
+    });
+})();
 
-})()
-
-function pushDataToStorage () {
-    const btn = document.querySelector("#addToCart")
-    btn.addEventListener("click", () => {
-        const id = getId()
-        const color = document.querySelector("#colors").value
-        const quantite = document.querySelector("#quantity").value
-
-        let produit = {
-            id: id,
-            color: color,
-            quantite: quantite
-        }
-        let storageStatus = JSON.parse(localStorage.getItem("produit"))
+// Envoi de la sélection de l'utilisateur, dans le localStorage.
+(function productStorage () {
+    const sendButton = document.querySelector("#addToCart");
+    sendButton.addEventListener("click", () => {
+        const productId = productCheck();
+        const productColor = document.querySelector("#colors").value;
+        const productQuantity = document.querySelector("#quantity").value;
+        let productDetails = {
+            id: productId,
+            color: productColor,
+            quantity: productQuantity
+        };
+        let storageStatus = JSON.parse(localStorage.getItem("product"));
         let storagePush = () => {
-            if (color === "") {
-                alert("Merci de selectionner une couleur")
-            } else if (quantite < 1 || quantite > 100) {
-                alert("Merci de choisir une quantité compris entre 1 et 100")
+            if (productColor === "") {
+                alert("Veuillez sélectionner une couleur");
+            } else if (productQuantity < 1 || productQuantity > 100) {
+                alert("Veuillez choisir entre 1 et 100 articles");
             } else {
-
-                storageStatus.push(produit)
-                localStorage.setItem('produit', JSON.stringify(storageStatus))
-                alert("Produit ajouté au panier avec succés")
+                storageStatus.push(productDetails);
+                localStorage.setItem("product", JSON.stringify(storageStatus));
+                alert("Votre sélection à été ajoutée au panier");
             }
-        }
-
+        };
         if (storageStatus) {
-            storageStatus.forEach((productFromLocal, index) => {
-                if (produit.id === productFromLocal.id
-                    && produit.color === productFromLocal.color) {
-                    produit.quantite = parseInt(produit.quantite) + parseInt(productFromLocal.quantite)
-                    storageStatus.splice(index, 1)
-                }
-            })
-            storagePush()
-
-        } else {
-            storageStatus = []
-            storagePush()
-        }
-
-
-    })
-
-}
-//pushDataToStorage()
-function addDataToStorage () {
-    const btn = document.querySelector("#addToCart")
-    btn.addEventListener("click", () => {
-        const id = getId()
-        const color = document.querySelector("#colors").value
-        const nombre = document.querySelector("#quantity").value
-        let storageStatus = JSON.parse(localStorage.getItem("commande"))
-        // Le choix de l'utilisateur
-        let produitCommande = {
-            id: id,
-            couleur: color,
-            quantite: nombre
-        }
-        let save = () => {
-            if (nombre < 1 || nombre > 100) {
-                alert("Veuillez choisir une quantité compris entre 1 et 100")
-            } else if (color === "") {
-                alert("Choisir une couleur")
-            } else {
-                storageStatus.push(produitCommande)
-                //Enregitrement des donnees
-                localStorage.setItem("commande", JSON.stringify(storageStatus))
-                alert("Produit ajouté au panier avec succès")
-            }
-        }
-
-        if (storageStatus) {
-            // Quand nous avons des données dans la base
             storageStatus.forEach((product, index) => {
-                if (product.id === produitCommande.id &&
-                    product.couleur === produitCommande.couleur) {
-                    produitCommande.quantite = parseInt(product.quantite) + parseInt(produitCommande.quantite)
-                    storageStatus.splice(index, 1)
+                if (productDetails.id === product.id &&
+                    productDetails.color === product.color) {
+                    productDetails.quantity = parseInt(productDetails.quantity) +
+                        parseInt(product.quantity);
+                    storageStatus.splice(index, 1);
                 }
-            })
-            save()
+            });
+            storagePush();
         } else {
-            storageStatus = []
-            // Aucune donnée trouvée
-            save()
-        }
-
-    })
-}
-addDataToStorage()
+            storageStatus = [];
+            storagePush();
+        };
+    });
+})();
